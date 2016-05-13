@@ -1,0 +1,715 @@
+1
+Introduction
+Since the industrialization, machines have taken on many human tasks [11]. Beginning
+with only physical jobs in the past, nowadays intelligent algorithms are solving more and
+more complex problems. Computerprograms like IBMs Watson win in Quizshows against
+humans [8] and humans talk with smartphones for personal assistancy [12].
+One scientific discipline that is tremendously influencing the developement of intelligent
+machines is the field of human language technology and pattern recognition [15]. The
+applications of human language technologies are manifold. From fully-automatic high-
+quality machine translation [11] to automatic semantic video transcription [13] or online
+translation of telephone conversations [6].
+One big breakthrough that enabled many other developments was the invention of
+statistical machine translation [11]. It has had several breakthroughs in the last few years,
+particularly with the application of deep learning algorithms [18]. Statistical machine
+translation developed out of encryption techniques, because foreign languages were only
+seen as an encrypted native language [11]. Therefore effort was put in programs, that
+analogously to encryption prgrams tried to ”encrypt” language [11]. The idea nowadays
+is to use machine learning techniques that automatically detect rules and patterns in data
+and learn indepentently from the programmer. These developements are mainly driven
+by the increasing amount of data and the increase in computational power, enabling more
+complex programs to run, that were thought impossible in the past [11].
+In the following the role and importance of Recurrent Neural Networks (RNN) in
+human language technologies will be discussed. More precisely, statistical Language Mod-
+eling (LM) techniques will be introduced and evaluated with special consideration of the
+RNN-LM.
+1.1
+Statistical Language Modeling Techniques
+A language model is the representation of a language and is an essential part of Natural
+Language Processing (NLP) [11]. Mathematically, it can be seen as a probability distribu-
+tion over words. Its goal is to capture the regularities of a natural language. It is a function
+that takes a sentence and gives back the probability that it is produced by a native speaker
+of that language [11]. It assigns a higher probability to sentences with a correct struc-
+ture or shows the right context dependent word. For example p LM (thehouseissmall >
+p LM (smalltheishouse) or p LM (Iamgoinghome) > p LM (Iamgoinghouse).
+Statistical LMs, though heavily critizised by linguists from the first days of its existence
+[14], are now used in many different areas of language technology like machine translation,
+spell correction and speech recognition [11]. Statistical language modeling has an import-
+ant role in Statistical Machine Translation (SMT), which evolved from information theory
+and probability theory [4]. SMT sees words as atomic units that occur in different con-
+stellations. The idea is to translate a document according to the probability distribution
+p(e|f ), where e and f are sequences of words. Since Bayes’ theorem states that
+P (A|B) =
+P (A)P (B|A)
+,
+P (B)
+(1)
+the best translation for a string f is the translation
+ẽ = arg max P (e|f ) = arg max P (f |e) ∗ p(e)
+e∈E
+e∈E
+(2)6
+1
+INTRODUCTION
+where E represents all possible sequences and word combinations, P (f |e) the probability
+of the source string f beeing the translation of the target string e and P (e) beeing the prob-
+ability, that the LM assigns to e. Given a sentence or a sequence of words in order S =
+(w 1 , w 2 , ..w n ), the LM can either be used to assign a probability P (S) = P (w 1 , w 2 , ..w n )
+or to predict the following word P (w n |S \ w n ) = P (w n |w 1 , w 2 , ..w n−1 ). In machine trans-
+lation the use case could be P (high, winds, tonight) > P (large, winds, tonight), in spell
+correction P (about, f if teen, minutes, f rom) > P (about, f if teen, minuets, f rom), or in
+speech recognition P (I, saw, a, van) > P (eyes, awe, of, van) [10].
+For language modeling there exist several techniques and extensions. The n-gram is
+based on statistics and does not use any knowledge about language. Other techniques in
+contrast use special knowledge. The cache LM, trys to use the fact that words observed
+in the past have a higher chance of occuring again [15]. Structured LMs are based on
+the idea that words in sentences are often related even if they do not follow each other
+directly. The decision tree LM partitions data in the history and asks general or specifiy
+questions about it at every node [15]. The random forest LM is a combination of several
+decision trees [15]. The Neural Network (NN) based LM projects word sequences into a
+lower dimensional space, which reduces the parameters and results in automatic clustering
+of similar histories [2]. In the following I will explain the n-gram and the NN-LM in more
+detail.
+1.1.1
+N-Gram
+The n-gram is one of the most used language modeling techniques [11]. In a nutshell it is
+the result of fragmenting a text into smaller successive text pieces and observing the word
+co-occurrences. It computes probabilities for sequences of words W 1 n = w 1 , w 2 ..w n using
+the chain rule
+n
+Y
+P (W 1 n ) =
+(3)
+P (w i |W 1 i−1 ).
+i=1
+Since the Markov Assumption states that
+P (W 1 n ) ≈
+n
+Y
+i−1
+)
+P (w i |W i−k
+(4)
+i=1
+the probability can be reduced to
+(P (the|its, water, is, so, transparent) ≈ (P (the|transparent, that), with
+P (A|B) =
+count(BA)
+count(B)
+(5)
+where A and B are wordsequences and count(BA) means the number of times that the
+BA sequence has been observed in the training data. The context or history B can be
+any set of words. If the n-gram is context independent and does not take history into
+count(A)
+consideration, then |B| = 0 is empty, P (A) = count(words)
+and it is called a unigram. If it
+is a bigram with |B| = 1 it assigns a probability depending on the short term history B.
+If |B| = 2 it is called a trigram model.
+The n-gram model is computational very efficient and can be easily applied to any
+domain or language [11]. It is noticeable, that the probabilty for a specific sequence will
+often be zero because the sequence did not occur in the training data. This problem is1.1
+Statistical Language Modeling Techniques
+7
+Table 1: Bigram Example [10]
+Inputs Weights
+x 1 w j1
+x 2 w j2
+P
+... ...
+x n w jn
+Activation
+Function
+Transfer
+Function
+net j
+φ
+o j
+θ j
+Figure 1: Neuron Activation
+known as sparseness problem. In this case smoothing is used, which redistributes probab-
+ilities between seen and unseen sequences. It is based on the idea that many observations
+are over-estimated because of the non-complete generality of the training data [11].
+But the n-gram also lacks some linguistic features. Since the n-gram only uses statistics,
+it is neither able to recognize similarities and abstract between words, nor to recognize or
+use long context patterns that are out of range n [15].
+Humans are able to connect information and recognize patterns. In the sentence THE
+SKY ABOVE OUR HEADS IS BLUE there is a link between ”BLUE” and ”SKY”.
+Though, the information about the connection would be learned by an n-gram with n > 4
+and would only be useful if the distance between ”SKY” and ”BLUE” was always smaller
+than n+1. Another example showing a boundary of n-grams is the sentence PARTY WILL
+BE ON ”WEEKDAY”. The n-gram is not able to learn or use the fact, that weekdays are
+semantically connected.
+In contrast, the NN-LM exploits the fact, that NNs are able to learn distributed
+representations [2], which are features that contain a meaning. That enables generalization
+and solves the problem of sparseness [19] as well as the problems demonstrated in the
+examples above.
+1.1.2
+Neural Networks
+Artificial neural networks are inspired by biology and belong to the field of artificial intel-
+ligence [11]. In a nutshell, they map an input vector to an output vector and do non-linear
+transformations in between.
+A NN is basically a set of lots of interconnected processing units called neurons. Like in
+a real brain, the connections are weighted and can be adapted. So training means adapting8
+1
+Input
+layer
+Hidden
+layer
+INTRODUCTION
+Output
+layer
+Input #1
+Input #2
+Output
+Input #3
+Input #4
+Figure 2: Feed Forward Neural Network
+the weights, creating new connections or deleting connections. The weights represent the
+learned knowledge of the network [11].
+Each neuron has an output and an input that is either the input data (if it is an
+input neuron) or other neurons weighted output. The sum of the weighted input neuron is
+taken as a parameter for the neurons nonlinear activation function. Without an activation
+function, a NN does linear mapping W i = o where W is the weight matrix, i is the input
+vector and o is the output vector. But because of the activation function, NNs are able to
+learn non-linear and highly complex functions [11].
+Figure 1 visualizes a typical neuron j. Net input is net j = W i, for the input vector i =
+
+x 1
+ x 2 
+
+  and weight matrix W = w j1 w j2 .. w jn The output neuron is o j = φ(W x +
+ .. 
+x n
+θ j ), where φ is called the activation function. Usually it is either the sigmoid function
+1
+φ() : R 7→ [0, 1], φ(z) = 1+exp(−z)
+or hyperbolicus tangent φ() : R 7→ [−1, 1], φ(z) =
+
+tanh(z) =
+e z −e −z
+.
+e z +e −z
+Adding those neurons together makes a NN. Several neurons together at a specific
+heigth are called a layer. The networks can be distinguished by their deepness, which
+means the number of layers or by their type of connections. If the connections between
+units form a directed cycle, it is called Recurrent Neural Network (RNN) otherwise, if it
+is cycle-free, it is called Feed Forward Neural Network (FFNN) [11]. As can be seen in
+Figure 2, the connections between the layers are directed to the front, whereas the RNN
+in Figure 3 contains recurrent connections.
+1.2
+Evaluation
+There are several methods for evaluating the quality of LMs [11]. In literature there are
+two evaluation metrics that are primarily used [5]: the Perplexity and the word error rate.1.2
+Evaluation
+9
+Input
+layer
+Hidden
+layer
+Output
+layer
+Input #1
+Input #2
+Output
+Input #3
+Input #4
+Figure 3: Recurrent Neural Network
+1.2.1
+Perplexity
+Perplexity is closely related to entropy which is defined as
+H(X) = −
+X
+p z (x) log 2 p z (x)
+(6)
+z∈Z
+for a random variable X over an alphabet Z = z 1 , z 2 ..z n and p z = P (X = z).
+It is a measure for the uncertainty in a probability distribution [11]. In a fair coin
+toss the final state of the coin is completely unknown. Therefore the uncertainty of the
+outcome is a maximum and the entropy of the probability distribution is 1.
+In contrast to entropy, cross entropy evaluates the quality of a model for a distribution
+probability. The lower the value for a model and a distribution, the more accurate the
+models approximation of the distribution [11]. It is defined as
+1
+H(p M ) = − log 2 p M (w 1 , w 2 , .., w n ).
+n
+(7)
+where p M (w 1 , w 2 , .., w n ) denotes the LMs probability assigned to a sequence by model
+M. It is the average of the negative logarithm of the word probabilities assigned by the
+LM. Perplexity is the exponential of the cross entropy, which is the per word entropy of a
+sequence. The Perplexity of word sequence w 1 n is defined as
+v
+u K
+u Y
+K
+PPL = t
+i=1
+1 P K
+1
+= 2 − K i=1 log 2 P (w i |w 1..i−1 ) = 2 H(p M ) .
+P (w i |w 1..i−1 )
+(8)
+To measure the perplexity of an LM, only a held-out sample text with its probability
+distribution is nedded. The better the LM, the less uncertainty about the probability of
+words it has, which leads to a higher accuracy of the probability estimation, which means
+a lower cross entropy, which lastly means a lower perplexity. The entropy of an optimal
+LM can only be as small as the languages entropy itself [11].10
+2
+1.2.2
+RECURRENT NEURAL NETWORK LANGUAGE MODEL
+Word Error Rate
+The Word Error Rate (WER) is another evaluation technique to measure the performance
+of LMs. It is defined as
+S + I + D
+(9)
+W ER =
+N
+where S is the number of needed substitutions, D deletions and I insertions and N the
+number of words of the reference sequence.
+It is related to the Levenshtein distance, which is the minimal amount of needed
+changing-steps to match two sequences. It compares two texts and counts the number of
+differences between them and normalizes these steps by the length of the original sequence
+length [11].
+For example the WER of the reference sentence What a nice day. and the hypothesis
+sentence Where a day. is W ER = S+D+I
+= 1+0+1
+= 4 2 = 12 .
+N
+4
+2
+Recurrent Neural Network Language Model
+In the following I am going to present the Recurrent Neural Network (RNN) model. Similar
+to an n-gram based approach, the RNN-LM learns a statistical model of the distribution
+of word sequences [16]. This LM technique aims to fight the curse of dimensionality [1],
+which means the problems of high dimensional machine learning techniques with lots of
+variables. It refers to the need for huge numbers of training examples when learning highly
+complex functions and arises when a huge number of different combinations of values of the
+input variables must be discriminated from each other while the learning algorithm needs
+at least one example per relevant combination of values [2]. Having an LM with vocabulary
+size of 100.000 words, results in 100000 10 − 1 = 10 50 − 1 possible word combinations with
+length 10, of which not all combinations are relevant or necessary [2].
+The idea behind the RNN-LM can be summarized as follows [15]:
+1. represent each word in the vocabulary with a distributed word feature vector (real
+valued element of R m ),
+2. express the joint probability function of word sequences as the feature vectors,
+3. learn the word feature vectors together with the probability functions parameters.
+2.1
+Simple RNN
+RNNs are used more and more frequently in machine translation [18]. Benefitting from
+their recurrent architecture they are able to process arbitrary sequences of inputs. So in
+contrast to feed forward networks, where each input vector has exactly one output, RNNs
+have one exact output for one specific input sequence [11]. Therefore they are turing
+complete and more powerful than FFNNs.
+There are several architecture for RNNs. The basic one is called simple RNN or Elman
+network. It has an input layer x, a context layer s and an output layer y. Regarding the
+time, x(t), s(t) and y(t) are the input, the context or the state of the network and the
+output at time t respectively. The input x(t) is the concatenation of the context vector
+s(t) and input vector w(t), which represents the current word at time t:
+K
+x(t) = w(t)
+s(t − 1)
+(10)2.2
+Long Short Term Memory
+11
+Figure 4: Simple RNN-LM [17]
+Usually for the dimension d of w d = |V | applies, with V being the vocabulary size. The
+input vector usually looks like w(t) = (0..0, 1, 0..0), which is a so called one-hot vector.
+For the context neuron j at time t the equation holds:
+X
+s j (t) = f (
+x i (t)u ji )
+(11)
+i
+where x i (t) means the i-th element of the input vector, u ji the connections weight between
+x i (t) and s j (t) and f the non-linear activation function.
+The ouput k-th element of output y at time t is
+X
+y k (t) = g(
+s j (t)v kj )
+(12)
+j
+where g is the softmax function, and s j and v kj similar to above.
+The sigmoid non-linear activation function:
+f (z) =
+1
+1 + e −z
+(13)
+The softmax function enforces the normalization of every vector entries probability
+estimate.
+e z
+g(z) = P |z| m
+(14)
+z k
+k (e )
+Then the probability of the next word w(t + 1) depending on all previous words can
+be formulated as follows.
+y(t) = p(w(t + 1)|w 1 t )
+(15)
+2.2
+Long Short Term Memory
+A special kind of RNNs is the Long Short Term Memory (LSTM) network. Conceptually
+RNNs are able to take advantage of long range sequences [20]. Nevertheless, in practice, it12
+2
+RECURRENT NEURAL NETWORK LANGUAGE MODEL
+Figure 5: j-th LSTM Unit of a RNNs Hidden Layer [20]
+was found that standard gradient-based training algorithms had some flaws like exploding
+or vanishing gradients while backpropagation [20]. This is due to the fact that the gradient
+calculation becomes unstable, the longer or higher the dependencies. Therefore, RNNs
+were practically unable to learn long term memory functionality.
+In 1997 Hochreiter and Schmidhuber published a paper [9] where they solved the
+problem of getting RNNs to remember things for a long time - like hundreds of time steps
+ago - introducing the LSTM. They designed a memory cell using logistic and linear units
+with multiplicative interactions.
+The dynamic state of a NN can be considered as a short term memory. The idea is
+to make the short term memory last for a long time [9]. It is done by special modules,
+working like small gates, that allow information to be gated in when relevant and out
+when needed.
+An LSTM is an RNN where the standard recurent hidden layer is replaced with an
+LSTM layer instead. Each LSTM unit has 11 weight matrices, named A. l i , φ i and w i are
+the input, forget and output gates. The following equations can be seen as a replacement
+for equation 10.
+l i = σ(A xl x i + A yl y i−1 + A cl c i−1 ) (16)
+φ i = σ(A xφ x i + A yφ y i−1 + A cφ c i−1 ) (17)
+c i = φ i c i−1 + l i tanh(A xc x i + A yc y i−1 ) (18)
+w i = σ(A xw x i + A yw y i−1 + A cw c i ) (19)
+y i = w i tanh(c i ) (20)
+Information gets into cells whenever its write gate is turned on. The rest of the network2.3
+Learning Algorithm
+13
+determines the state of the write gate. Information that is in the cell stays there as long
+as the keep gate is active. Information can be read from the cell by turning on the read
+gate.
+The memory cell actually stores an analog value. So it is a linear neuron, that has an
+analog value and keeps writing that value to itself. Learned values can be included in the
+backpropagation, including all the actions like write read or keep.
+2.3
+Learning Algorithm
+In general there are two kinds of learning algorithms, supervised learning and unsupervised
+learning. Unsupervised learning is the problem of finding structure in unlabeled data [7].
+Supervised learning means the problem of inferring a function corresponding to labeled
+training data. For NNs it means finding the right weights so that for the training set the
+error is minimized. In the following I will focus on supervised learning for NNs.
+Since NNs are a sum of lots of non-linear differentiable functions, each weight is differ-
+entiable itself. This makes it applicable for backpropagation, a stochastic gradient descent
+algorithm. For each modifiable weight, it calculates the gradient of a cost (or error)
+function and adjusts the weight accordingly.
+After randomly initializing all weights with small numbers (with mean 0 and variance
+0.1) and and all hidden layer neurons with 1, one training iteration of a NN works as
+follows:
+1. Put current word w t in input layer w(t)
+2. Propagate forward to obtain s(t) and y(t)
+3. Compute gradient of error e(t) in the output layer
+4. Propagate error back through the NNs beginning and change weights accordingly.
+There exist several cost functions of which I will present two, since not all are applic-
+acable in the field of language technology [15]. The first is the quadratic cost, also known
+as mean squared error, maximum likelihood, and sum squared error, this is defined as:
+n
+C =
+m
+1 X X
+(y pk − d pk ) 2 ,
+2 p
+(21)
+k
+The second is the cross-entropy cost:
+C = −
+n X
+m
+X
+p
+(d pk ln(y pk ) + (1 − d pk ) ln(1 − y pk )
+(22)
+k
+where d is a data vector, n the trainings batch size and m the dimension of output vector
+y. The ln() function takes into account the closeness of a prediction and is a granular way
+to compute error in our case . The first error function would not lead to a wrong network
+but because it is a regression, the results would lack on accuracy [15].
+In the following BP for RNNs will be explained. After obtaining y(t), the error gradient
+e o is calculated as:
+e o (t) = d(t) − y(t)
+(23)14
+2
+RECURRENT NEURAL NETWORK LANGUAGE MODEL
+The next step is to fit the weights V according to the error:
+V (t + 1) = V (t) + s(t)e o (t) T α − V (t)β,
+(24)
+where β is a very small value used for L2 regularization, to keep the weights close to zero.
+Next, e h (t), the gradient of error from the output to the hidden layer, is computed:
+e h (t) = d h (e o (t) T V, t),
+(25)
+where d h () is applied element-wise:
+d hj (x, t) = xs j (t)(1 − s j (t)).
+(26)
+The weights matrix U and W are then updated as
+U (t + 1) = U (t) + w(t)e h (t) T α − U (t)β, (27)
+W (t + 1) = W (t) + s(t)e h (t) T α − W (t)β, (28)
+where w(t) is the input vector and s(t) the last remembered history.
+2.3.1
+Backpropagation through time
+Simple Backpropagation (BP) is the basic training procedure for NNs. But for RNNs the
+algorithm is not optimal. Effort is only put into optimizing the prediction of the next
+word given the previous word and previous state of the hidden layer but the architectural
+ability to save information in the hidden layer is not exploited. With simple BP, the RNN
+can learn at most context patterns, such as 4-gram information [15].
+However, there is an extension of the simple BP algorithm, the Backpropagation
+Through Time (BPTT) algorithm, that enables the network to store information in the
+hidden layer. The basic idea is to unfold a RNN that is used for n timesteps with one
+hidden layer to a deep FFNN with n hidden layers. As can be seen in Figure 6, the network
+is unfolded n times so that longer context pattern can be found and learned.
+Using BPTT, the equations for updating the weights need to be changed to:
+e h (t − τ − 1) = d h (e h (t − τ ) T W, t − τ − 1),
+(29)
+where d h is the same as before. The errors are propagated from one hidden layer to another
+and the weight matrices are updated accordingly. Therefore all hidden layer states from
+previous timesteps need to be stored.
+Matrix U and W are updated in one large update and not incrementally to prevent
+instability of training [15].
+U (t + 1) = U (t) +
+T
+X
+w(t − z)e h (t − z) T α − U (t)β (30)
+s(t − z − 1)e h (t − z) T α − W (t)β (31)
+z=0
+W (t + 1) = W (t) +
+T
+X
+z=015
+Figure 6: Backpropagation Through Time [15]
+3
+Evaluation of the RNN Language Modeling Technique
+All language modeling techniques are well-motivated and have theoretical explanation
+about why they are optimal, under certain assumptions [15]. The problem is that many
+of such assumptions are not satisfied in practice [15]. Furthermore, features like accuracy
+are sometimes as important as low memory usage or low complexity [15]. Therefore it is
+best to compare different LMs on the same data, so that they can be compared under the
+same requirements and experiments can be repeatet.
+The following section is about experiments and test results of the RNN model combined
+and compared with other models. Combination of two models M 1 and M 2 is done using
+linear interpolation:
+P M 12 (w|h) = λP M 1 (w|h) + (1 − λ)P M 2 (w|h)
+(32)
+where λ ∈< 0; 1 > is the interpolation weight of the model M 1 .
+3.1
+Datasets
+Theoretically, for experiments and testing LMs, there can be used any text. Nevertheless,
+there are some databases that are used frequently for training and comparing the models.
+I found the Brown corpus, the Associated Press News, the Penn Treebank portion of the
+Wall Street Journal Dataset and the Wall Street Journal speech recognition task repeatedly
+used.
+The Brown University Standard Corpus of Presend-Day American English is a stream
+of roughly one million words, from a large variety of English texts and books. The number
+of different words is 47,578 including punctuation, texts and paragraphs.16
+3
+EVALUATION OF THE RNN LANGUAGE MODELING TECHNIQUE
+Table 2: Perplexity of Different Models of the Penn Treebank Corpus[15].
+The AP news are a news archive. There are different newspaper articles of different
+topics from different time periods. The news from 1995 and 1996 are a 15 million words
+stream.[2] The data has around 150,000 different words including punctuation.
+The Penn Treebank portion of the WSJ corpus is one of the most widely used data
+sets for evaluating performance of the statistical language model. Many researchers have
+used it with exactly the same data preprocessing, that is the same training, validation and
+test data and the same vocabulary limited to 10K words.
+Also frequently used for research is the Wall Street Journal speech recognition task.
+On this task speech recognition errors are mainly caused by the LM [15]. The training
+corpus contains 37M words from NYT section of English Gigaword.
+For the Quaero project, there has been developed a speech recognition system for
+English and French [20]. For acoustic modeling, the system was trained on broadcast
+news and broadcast conversations. The underlying LMs were trained on reduced datasets
+of 50M french and 100M english words.
+3.2
+Experiments & Results
+The goal of all the experiments is to find out more about how the RNN works and how
+the RNN LM performes compared to other LM techniques. Benchmark is the state-of-the
+art n-gram model, the Modified Kneser-Ney smoothed 5-gram model.
+Table 2 summarizes the performance of several LMs on the Penn Treebank dataset.
+The first group of models are n-grams with Good-Turing (GT) and Kneser-Ney (KN)
+smoothing. The results show the superiority of KN over GT and 5-grams over 3-grams as
+well as the benefit of having a cache. PAQ8o10t is a state-of-the-art compression program
+and was used as a reference. The basic idea behind it is, that the information captured
+by a compression program is the same as when using a statistical LM [15].
+The second part of table 2 shows the results of other popular LM techniques. The
+maximum entropy 5-gram model allows to extract information from further back in a
+documents history and not only its immediate past [15]. Though its perplexity is not3.2
+Experiments & Results
+17
+Figure 7: Perplexity Depending on Number of RNN Models[17].
+better than the 5-gram ones with KN smoothing. The same holds for Random clusterings,
+random forest and structured LM. Only the random forests perplexity is a little bit lower
+than the baseline. The within and across sentence boundary LM includes several various
+information sources and works in a similar way to the cache model [15]. It is a combination
+of models and performed best among the non-neural network models.
+The third group of models in the table shows the performance of several NNLMs. The
+RNN clearly outperforms the FFNN. Adding KN5 and cache to the FFNN model results
+in a similar perplexity like the RNN with KN5, showing the advantage of the recurrence.
+The FFNN projects individual words, whereas the RNN clusters whole histories, which
+allows to make use of a wider range of patterns in the data [15]. It is interesting, that even
+the best RNNLM only showed a slightly petter performance than the baseline model. The
+question is if this improvemet results from simply learning cache-like information from the
+data. But theoretically, the RNN can not learn long term pattern, if trained by stochastic
+gradient descent, because of the vanishing error problem [3]. Too fast, the error converges
+to zero, which makes patterns spanning over several sentences impossible [3].
+The last models presented in the table 2 are combination of up to 20 different RNN
+models, that were initialized with different weight matrices. By linearly interpolating
+their probability distributions, a combination of these models was achieved. They clearly
+outperform every other technique mentioned. Figure 7 shows, how adding more RNN
+models reduces the perplexity. Typically, around 5 models are enough until the advantages
+are too small and asymptote.
+Another question is if it is enough to use several RNNs and train them with simple BP.
+Figure 8 however shows the importance of BPTT even for mixture models. This clearly
+shows, that BPTT lets the network learn additional patterns, which absence cannot be
+compensated by adding more models [17]. The network can be unfolded for as many time18
+3
+EVALUATION OF THE RNN LANGUAGE MODELING TECHNIQUE
+Figure 8: Perplexity Depending on the the Unfolding Steps in BPTT[15].
+steps as training examples were seen already but Figure 8 implicates, that for word based
+LMs, it seems to be sufficient to unfold the network for 5 times [15].
+To support the thesis, that RNN-LMs are performing the best among all NN-LMs,
+one can look at the perplexity of a combination of all types of NN-LMs on the PTB
+corpus. Each model has a weight that is optimized for optimal performance. The sum
+of all weights is always 1. If a combination of individual models is used, the perplexity
+decreases to 100.2, which is around the same as the combinational models in table 2 have.
+If one combines all types of NN LMs including the combination models, the perplexity
+falls to 93.2. The RNNs have the biggest weighting, showing their importance, and that
+the models perplexity stays the same if the FFNN or log-bilinear LM are left out [15].
+Table 3 shows the same experiment, not only for NNs but including all models. Again,
+the RNNs have the biggest weights. The fact that the static and dynamic RNNLMs have
+such high weight values proves that they complement each other [15].
+For the WSJ speech recognition task the mixed model of 3 interpolated RNN LMs also
+showed the best results, reducing the WER relatively by about 20% compared with the
+KN5 baseline [15]. Figure 9 compares the performance of an n-gram with the performance
+of an n-gram RNN mixture model. Again, it shows the additional benefit of combining
+RNN with n-grams and indicates the trend, that with more training data, performance
+increases. It looks like the RNNs performance gain by means of more data is even stronger
+than the n-grams [15]. Nevertheless, it should be mentioned that the computational power
+and time needed for training RNN models strongly increases with more training data.
+Another experiment performed on the English Broadcast News NIST RT04 task gives
+insight into the relation between hidden layer size and performance. As can be seen in
+table 4, where a RNN with hidden layer size 10 is denoted as RNN-10, the perplexity3.2
+Experiments & Results
+19
+Table 3: Weighted Combination and Result of Models on Penn Treebank Corpus[15].
+Figure 9: Improvements with Increasing Data on WSJ - KN5 vs. KN5 + RNN[15].20
+4
+CONCLUSION
+Table 4: Perplexity of Models with Increasing Size of Hidden Layer[15].
+decreases with increasing hidden layer size. A greater amount of neurons in the hidden
+layer could decrease the perplexity even further but the complexity is complicating the
+evaluation process [15].
+Experiments with neural networks including LSTMs are in line with the other results
+presented [20] [21]. The results of the Quaero speech recognition experiment implies a
+hierarchy of quality in the neural network architectures. Table 5 shows the performance
+of different types of NN-LMs, interpolated with the large count LM, on the English test
+data. LSTMs performed better than RNNs, which performed better than FFNNs.
+The results also showed the impact of deepness. While a second layer improved the
+FFNNs quality only imperceptible, the LSTMs clearly benefitted from a second layer [20],
+which is not obvios because a single-layer LSTM network can be considered deep, because
+of the unfolding over time [20]. The LSTM with 2 hidden layers with 600 neurons each
+performed best, improving the count LM baseline WER from 12, 4% to 10, 4%, while the
+LSTM had 60 times less data [20].
+4
+Conclusion
+In this seminar I examined the statistical RNN-LM. I explained how NNs work and how
+they are trained. It was found, that BPTT training enables the network to learn more
+complex pattern than simple BP. I illustrated the vanishing gradient problem in the train-
+ing process and explained the LSTM NN. Furthermore I gave an overview over statistical
+language modeling techniques and their importance. Comparing other advanced tech-
+niques with NN techniques showed that RNN LMs reached state-of-the-art performance
+on several datasets and that they are superior to simple feedforward networks. Exper-
+iments I examined also indicated, that with an increasing amount of training data the
+performance improvement increases if the hidden layer size increases.
+All in all I found out about the importance and the idea behind machine learning21
+Table 5: Performance of Different Types of NN-LMs on the English Test Data[20].22
+REFERENCES
+techniques in language modeling. Letting algorithms recognize patterns automatically in
+large datasets turned out to work very well if enough data and computational power is
+available. I learned that nowadays the task of learning languages focuses on the learning
+itself rather on hand-designing features and complex models.
+5
+Speed-up Techniques
+Having lots of training data increases the amounnt of time needed for computation. Bot-
+tleneck of the NNs is the computational complexity of the training process [17]. Therefore,
+there are several modifications for the RNN, that aim to speed up the learning process.
+With H being the size of the hidden layer, V size of the vocabulary and τ the amount of
+timesteps, the computational complexity of one BPTT step is proportional to
+O = (1 + H) × H × τ + H × V.
+(33)
+Since usually H << V holds true, the bottleneck is the networks output vocabulary size
+[17]. Possible workarounds are vocabulary truncation, which means putting all rare words
+together and word clustering, which is based on the idea, that words can be mapped to
+classes, was used. Vocabulary truncation leaves out some rare vocabulary, which obviously
+leads to a quality decrease, whereas factorization of the output layer in theory could
+maintain performance [17]. The underlying idea can be expressed with the formula
+P (w i |H) = P (c i |s(t))P (w i |c i , s(t)).
+(34)
+With factorization of the output layer, complexity can be reduced to
+O = (1 + H) × H × τ + H × C
+(35)
+where C is the number of classes. The model is visualized in Figure 10. The output then
+is
+X
+y c (t) = g(
+s j (t)v cj )
+(36)
+j
+and
+c l (t) = g(
+X
+s j (t)w lj ).
+(37)
+j
+References
+[1] Richard Bellman. Dynamic programming and lagrange multipliers. Proceedings of
+the National Academy of Sciences of the United States of America, 42(10):767, 1956.
+[2] Yoshua Bengio, Réjean Ducharme, Pascal Vincent, and Christian Janvin. A neural
+probabilistic language model. The Journal of Machine Learning Research, 3:1137–
+1155, 2003.
+[3] Yoshua Bengio, Patrice Simard, and Paolo Frasconi. Learning long-term dependencies
+with gradient descent is difficult. Neural Networks, IEEE Transactions on, 5(2):157–
+166, 1994.REFERENCES
+23
+Figure 10: Extended RNN by Output Factorization [17]
+[4] Peter F Brown, John Cocke, Stephen A Della Pietra, Vincent J Della Pietra, Fredrick
+Jelinek, John D Lafferty, Robert L Mercer, and Paul S Roossin. A statistical approach
+to machine translation. Computational linguistics, 16(2):79–85, 1990.
+[5] Stanley F Chen, Douglas Beeferman, and Roni Rosenfield. Evaluation metrics for
+language models. 1998.
+[6] Alexei Dingli and Dylan Seychell. Future trends. In The New Digital Natives, pages
+117–129. Springer, 2015.
+[7] Richard O Duda, Peter E Hart, and David G Stork. Pattern classification. John
+Wiley & Sons, 2012.
+[8] Erico Guizzo. Ibms watson jeopardy computer shuts down humans in final game.
+IEEE Spectrum, 17, 2011.
+[9] Sepp Hochreiter and Jürgen Schmidhuber. Long short-term memory. Neural compu-
+tation, 9(8):1735–1780, 1997.
+[10] Dan Jurafsky. Cs 124: From languages to information. University Lecture, 2015.
+[11] Philipp Koehn. Statistical machine translation. Cambridge University Press, 2009.
+[12] Oliver Lemon. Conversational Interfaces. Springer, 2012.
+[13] Haitao Liao, Erik McDermott, and Alan Senior. Large scale deep neural network
+acoustic modeling with semi-supervised training data for youtube video transcription.
+In Automatic Speech Recognition and Understanding (ASRU), 2013 IEEE Workshop
+on, pages 368–373. IEEE, 2013.24
+REFERENCES
+[14] Christopher D Manning and Hinrich Schütze. Foundations of statistical natural lan-
+guage processing. MIT press, 1999.
+[15] Tomáš Mikolov. Statistical language models based on neural networks. PhD thesis,
+2012.
+[16] Tomáš Mikolov, Martin Karafiát, Lukas Burget, Jan Cernockỳ, and Sanjeev Khudan-
+pur. Recurrent neural network based language model. In INTERSPEECH 2010, 11th
+Annual Conference of the International Speech Communication Association, Mak-
+uhari, Chiba, Japan, September 26-30, 2010, pages 1045–1048, 2010.
+[17] Tomáš Mikolov, Stefan Kombrink, Lukáš Burget, Jan Honza Černockỳ, and Sanjeev
+Khudanpur. Extensions of recurrent neural network language model. In Acoustics,
+Speech and Signal Processing (ICASSP), 2011 IEEE International Conference on,
+pages 5528–5531. IEEE, 2011.
+[18] Jürgen Schmidhuber. Deep learning in neural networks: An overview. Neural Net-
+works, 61:85–117, 2015.
+[19] Holger Schwenk and Jean-Luc Gauvain. Training neural network language models on
+very large corpora. In Proceedings of the conference on Human Language Technology
+and Empirical Methods in Natural Language Processing, pages 201–208. Association
+for Computational Linguistics, 2005.
+[20] Martin Sundermeyer, Hermann Ney, and Ralf Schluter. From feedforward to recurrent
+lstm neural networks for language modeling. Audio, Speech, and Language Processing,
+IEEE/ACM Transactions on, 23(3):517–529, 2015.
+[21] Martin Sundermeyer, Ilya Oparin, Jean-Luc Gauvain, Ben Freiberg, Ralf Schluter,
+and Hermann Ney. Comparison of feedforward and recurrent neural network lan-
+guage models. In Acoustics, Speech and Signal Processing (ICASSP), 2013 IEEE
+International Conference on, pages 8430–8434. IEEE, 2013.
